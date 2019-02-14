@@ -50,6 +50,7 @@ class Spielplaetze extends React.Component {
        var markers = [];
 
         for (var i = 0; i < responseData.features.length; i++) {
+          if (responseData.features[i].properties.Torwand != '<Null>'){
             var coords = responseData.features[i].geometry.coordinates;
             var marker = {
               coordinate: {
@@ -58,6 +59,7 @@ class Spielplaetze extends React.Component {
               }
             }
             markers.push(marker);
+          }
         }
         this.setState({
           markers: markers,
