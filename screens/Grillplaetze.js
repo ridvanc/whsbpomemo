@@ -31,22 +31,22 @@ class Spielplaetze extends React.Component {
     }
 
     getPosition(){
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-        console.log(position);
-          this.setState({
-            region: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta:  0.020,
-              longitudeDelta:  0.020,
-            }
-          });
-        },
-        (error) => this.setState({ error: error.message }),
-       { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
-     );
-    }
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+    console.log(position);
+      this.setState({
+        region: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          latitudeDelta:  0.020,
+          longitudeDelta:  0.020,
+        }
+      }, () => this.getLocations());
+    },
+    (error) => this.setState({ error: error.message }),
+    { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
+  );
+}
 
     getLocations() {
 

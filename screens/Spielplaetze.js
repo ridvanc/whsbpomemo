@@ -29,22 +29,22 @@ class Spielplaetze extends React.Component {
     }
 
     getPosition(){
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-        console.log(position);
-          this.setState({
-            region: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta:  0.020,
-              longitudeDelta:  0.020,
-            }
-          });
-        },
-        (error) => this.setState({ error: error.message }),
-       { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
-     );
-    }
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+    console.log(position);
+      this.setState({
+        region: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          latitudeDelta:  0.020,
+          longitudeDelta:  0.020,
+        }
+      }, () => this.getLocations());
+    },
+    (error) => this.setState({ error: error.message }),
+    { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
+  );
+}
 
     getLocations(){
     return fetch('http://media-panda.de/cologne.geojson')
@@ -53,7 +53,6 @@ class Spielplaetze extends React.Component {
        var markers = [];
 
         for (var i = 0; i < responseData.features.length; i++) {
-          if (responseData.features[i].properties.Torwand != '<Null>'){
             var coords = responseData.features[i].geometry.coordinates;
             var marker = {
               coordinate: {
@@ -62,7 +61,7 @@ class Spielplaetze extends React.Component {
               }
             }
             markers.push(marker);
-          }
+
         }
         this.setState({
           markers: markers,
@@ -100,7 +99,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ecf0f1',
-    
+
   },
   map: {
     width: "100%",
