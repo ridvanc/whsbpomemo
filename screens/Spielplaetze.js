@@ -1,6 +1,8 @@
 import React from 'react';
 import MapView from 'react-native-maps';
 import Marker from 'react-native-maps';
+import Supercluster from 'supercluster';
+
 
 import {
   View,
@@ -12,6 +14,7 @@ import {
 class Spielplaetze extends React.Component {
 
   constructor() {
+
       super();
       this.state = {
         markers: [],
@@ -97,6 +100,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ecf0f1',
+    
   },
   map: {
     width: "100%",
