@@ -1,29 +1,34 @@
 import React from 'react';
 import MapView from 'react-native-maps';
 import Marker from 'react-native-maps';
-import Supercluster from 'supercluster';
 import Geolib from 'geolib';
+import { Slider } from 'react-native';
+
 
 import {
   View,
   Text,
   StyleSheet,
   Button,
+  TextInput,
 } from "react-native";
 
 const geolib = require('geolib');
 
-class Spielplaetze extends React.Component {
+class Grillplaetze extends React.Component {
 
   constructor() {
 
       super();
       this.state = {
         markers: [],
-        loaded: false
+        loaded: false,
+        radius: '800'
       }
 
-    }
+
+
+  }
 
     componentDidMount() {
       this.getPosition();
@@ -47,10 +52,22 @@ class Spielplaetze extends React.Component {
     { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
   );
 }
+  onPress500 = () => {
+    this.setState({
+      radius: '500'
+    })
+    this.getLocations();
+  }
+  onPress1000 = () => {
+    this.setState({
+      radius: '1000'
+    })
+    this.getLocations();
+  }
 
     getLocations() {
 
-  return fetch('http://media-panda.de/cologne.geojson')
+  return fetch('http://media-panda.de/bp/whs.geojson')
   .then(response => response.json())
   .then(responseData => {
     let { region } = this.state;
@@ -66,7 +83,7 @@ class Spielplaetze extends React.Component {
       }
     }).filter(marker => {
       let distance = this.calculateDistance(latitude, longitude, marker.coordinate.latitude, marker.coordinate.longitude);
-      return distance <= 500;
+      return distance <= this.state.radius;
     });
 
     this.setState({
@@ -88,6 +105,10 @@ class Spielplaetze extends React.Component {
 
   return (
       <View style={styles.container}>
+        <View style={styles.buttonContainer}>
+          <View style={styles.buttons}><Button title="500" onPress={this.onPress500} /></View>
+          <View style={styles.buttons}><Button title="1000" onPress={this.onPress1000} /></View>
+        </View>
       <MapView.Animated
         style={styles.map}
         region={this.state.region}
@@ -101,19 +122,20 @@ class Spielplaetze extends React.Component {
        <MapView.Circle
                 key = { (this.state.latitude + this.state.longitude).toString() }
                 center = { this.state.region }
-                radius = { 500 }
+                radius = { this.state.radius }
                 strokeWidth = { 1 }
                 strokeColor = { '#1a66ff' }
                 fillColor = { 'rgba(230,238,255,0.5)' }
 
         />
        </MapView.Animated>
+
       </View>
      );
   }
 }
 
-export default Spielplaetze;
+export default Grillplaetze;
 
 const styles = StyleSheet.create({
   container: {
@@ -125,6 +147,16 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: "100%",
+    height: "90%",
   },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttons:{
+    flex: 1,
+  }
+
 })

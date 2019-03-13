@@ -51,8 +51,6 @@ class Grillplaetze extends React.Component {
     .then(response => response.json())
     .then(responseData =>{
        var markers = [];
-       var testmarkers = [];
-       var testmarkers2 = [];
         for (var i = 0; i < responseData.features.length; i++) {
 
           if(responseData.features[i].properties.Torwand != '<Null>'){
@@ -65,24 +63,7 @@ class Grillplaetze extends React.Component {
             }
           }
 
-          var testmarker = {
-
-            coordinate: {
-              latitude: 51.574673003480285,
-              longitude: 7.0262687035819535,
-            }
-          }
-
-          var testmarker2 = {
-
-            coordinate: {
-              latitude: 51.569526,
-              longitude: 7.034146,
-            }
-          }
           markers.push(marker);
-          testmarkers.push(testmarker);
-          testmarkers2.push(testmarker2);
 
         }
         }
@@ -93,8 +74,6 @@ class Grillplaetze extends React.Component {
 
         this.setState({
           markers: markers,
-          testmarkers : testmarkers,
-          testmarkers2 : testmarkers2,
           loaded: true,
         });
       }
@@ -120,20 +99,6 @@ class Grillplaetze extends React.Component {
             key={marker.key}
             coordinate={marker.coordinate}
           />
-       ))}
-       {this.state.testmarkers.map(testmarker => (
-          <MapView.Marker
-            key={testmarker.key}
-            coordinate={testmarker.coordinate}
-          />
-
-       ))}
-       {this.state.testmarkers2.map(testmarker2 => (
-          <MapView.Marker
-            key={testmarker2.key}
-            coordinate={testmarker2.coordinate}
-          />
-
        ))}
 
 

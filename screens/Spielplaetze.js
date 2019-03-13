@@ -24,7 +24,6 @@ class Spielplaetze extends React.Component {
     }
 
     componentDidMount() {
-      this.getLocations();
       this.getPosition();
     }
 
