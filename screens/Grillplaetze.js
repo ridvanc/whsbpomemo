@@ -72,7 +72,7 @@ class Grillplaetze extends React.Component {
       let { latitude, longitude } = region;
 
       let markers = responseData.features.map(feature =>  {
-        let coords = feature.geometry.coordinates
+      let coords = feature.geometry.coordinates
 
         return {
           coordinate: {
@@ -110,7 +110,10 @@ class Grillplaetze extends React.Component {
             minimumValue={100}
             step={100}
             value={this.state.value}
-            onValueChange={value => this.setState({ value })}
+            onValueChange={value => {
+            this.getLocations()
+            this.setState({value})
+           }}
         />
         <View>
           <Text>Radius: {this.state.value} meter</Text>

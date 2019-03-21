@@ -3,7 +3,8 @@ import { Button, View, Text } from 'react-native';
 import Grillplaetze from './screens/Grillplaetze';
 import Spielplaetze from './screens/Spielplaetze';
 import Sportanlagen from './screens/Sportanlagen';
-import { createStackNavigator, createAppContainer } from 'react-navigation'; // Version can be specified in package.json
+import { createStackNavigator, createAppContainer, createBottomTabNavigator } from 'react-navigation'; // Version can be specified in package.json
+import { Ionicons, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 class HomeScreen extends React.Component {
 
@@ -12,40 +13,47 @@ class HomeScreen extends React.Component {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Text>Herzlich Willkommen </Text>
-        <Button
-          title="Zu den Grillplätzen"
-          onPress={() => this.props.navigation.navigate('gplaetze')}
-        />
-        <Button
-          title="Zu den Spielplätzen"
-          onPress={() => this.props.navigation.navigate('splaetze')}
-        />
-        <Button
-          title="Zu den Sportanlagen"
-          onPress={() => this.props.navigation.navigate('sportplaetze')}
-        />
+         <Ionicons name="md-checkmark-circle" size={32} color="green" />
       </View>
     );
   }
 }
 
 
-const RootStack = createStackNavigator(
+export default createAppContainer(createBottomTabNavigator(
   {
-    Home: HomeScreen,
-    gplaetze: Grillplaetze,
-    splaetze: Spielplaetze,
-    sportplaetze: Sportanlagen,
+    Home: { screen: HomeScreen },
+    Grillplätze: { screen: Grillplaetze },
+    Spielplätze: { screen: Spielplaetze },
+    Sportanlagen: { screen: Sportanlagen },
   },
   {
-    initialRouteName: 'Home',
-  }
-);
+    defaultNavigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, tintColor }) => {
+        const { routeName } = navigation.state;
+        let iconName;
+        if (routeName === 'Home') {
+          iconName = 'home';
+        }
+        if (routeName === 'Grillplätze') {
+          iconName = 'fire';
+        }
+        if (routeName === 'Spielplätze') {
+          iconName = 'child';
+        }
+        if (routeName === 'Sportanlagen') {
+          iconName = 'dribbble';
+        }
 
-const AppContainer = createAppContainer(RootStack);
+        // You can return any component that you like here! We usually use an
+        // icon component from react-native-vector-icons
+        return <FontAwesome name={iconName} size={25} color={tintColor} />;
 
-export default class App extends React.Component {
-  render() {
-    return <AppContainer />;
+      },
+    }),
+    tabBarOptions: {
+      activeTintColor: 'tomato',
+      inactiveTintColor: 'gray',
+    },
   }
-}
+));

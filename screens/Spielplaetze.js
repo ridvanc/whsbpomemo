@@ -1,7 +1,7 @@
 import React from 'react';
 import MapView from 'react-native-maps';
 import Marker from 'react-native-maps';
-import Supercluster from 'supercluster';
+import Geolib from 'geolib';
 
 
 import {
@@ -10,6 +10,10 @@ import {
   StyleSheet,
   Button,
 } from "react-native";
+
+
+
+const geolib = require('geolib');
 
 class Spielplaetze extends React.Component {
 
@@ -46,22 +50,25 @@ class Spielplaetze extends React.Component {
 }
 
     getLocations(){
-    return fetch('http://media-panda.de/cologne.geojson')
+    return fetch('http://media-panda.de/bp/whs.geojson')
     .then(response => response.json())
-    .then(responseData =>{
-       var markers = [];
+    .then(responseData => {
+      let { region } = this.state;
+      let { latitude, longitude } = region;
 
-        for (var i = 0; i < responseData.features.length; i++) {
-            var coords = responseData.features[i].geometry.coordinates;
-            var marker = {
-              coordinate: {
-                latitude: coords[1],
-                longitude: coords[0],
-              }
-            }
-            markers.push(marker);
-
+      let markers = responseData.features.map(feature =>  {
+        let coords = feature.geometry.coordinates
+        return {
+          coordinate: {
+            latitude: coords[1],
+            longitude: coords[0],
+          }
         }
+      }).filter(marker => {
+        let distance = this.calculateDistance(latitude, longitude, marker.coordinate.latitude, marker.coordinate.longitude);
+        return distance <= 500;
+      });
+
         this.setState({
           markers: markers,
           loaded: true,
@@ -69,7 +76,12 @@ class Spielplaetze extends React.Component {
       }
     ).done();
   }
-
+  calculateDistance(origLat, origLon, markerLat, markerLon) {
+    return geolib.getDistance(
+      {latitude: origLat, longitude: origLon},
+      {latitude: markerLat, longitude: markerLon}
+    );
+  }
   render() {
 
   return (
