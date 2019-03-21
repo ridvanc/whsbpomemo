@@ -13,7 +13,6 @@ class HomeScreen extends React.Component {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Text>Herzlich Willkommen </Text>
-         <Ionicons name="md-checkmark-circle" size={32} color="green" />
       </View>
     );
   }
@@ -52,7 +51,7 @@ export default createAppContainer(createBottomTabNavigator(
       },
     }),
     tabBarOptions: {
-      activeTintColor: 'tomato',
+      activeTintColor: '#6eac00',
       inactiveTintColor: 'gray',
     },
   }
