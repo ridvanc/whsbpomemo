@@ -4,7 +4,7 @@ import Grillplaetze from './screens/Grillplaetze';
 import Spielplaetze from './screens/Spielplaetze';
 import Sportanlagen from './screens/Sportanlagen';
 import { createStackNavigator, createAppContainer, createBottomTabNavigator } from 'react-navigation'; // Version can be specified in package.json
-import { Ionicons, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome} from '@expo/vector-icons';
 
 class HomeScreen extends React.Component {
 
@@ -32,27 +32,26 @@ export default createAppContainer(createBottomTabNavigator(
         const { routeName } = navigation.state;
         let iconName;
         if (routeName === 'Home') {
-          iconName = 'home';
+          iconName = 'ios-home';
+          return <Ionicons name={iconName} size={25} color={'#f5c431'} />;
         }
         if (routeName === 'Grillplätze') {
-          iconName = 'fire';
+          iconName = 'ios-bonfire';
+          return <Ionicons name={iconName} size={25} color={'tomato'} />;
         }
         if (routeName === 'Spielplätze') {
-          iconName = 'child';
+          iconName = 'ios-happy';
+          return <Ionicons name={iconName} size={25} color={'#6eac00'} />;
         }
         if (routeName === 'Sportanlagen') {
-          iconName = 'dribbble';
+          iconName = 'ios-basketball';
+          return <Ionicons name={iconName} size={25} color={'#4285f4'} />;
         }
 
-        // You can return any component that you like here! We usually use an
-        // icon component from react-native-vector-icons
-        return <FontAwesome name={iconName} size={25} color={tintColor} />;
-
       },
+
     }),
     tabBarOptions: {
-      activeTintColor: '#6eac00',
-      inactiveTintColor: 'gray',
     },
   }
 ));
