@@ -1,0 +1,359 @@
+import React from "react";
+import {
+  Image,
+  Text,
+  View,
+  TouchableOpacity,
+  Slider,
+  Alert,
+  TouchableWithoutFeedback,
+  Modal,
+  TouchableHighlight
+} from "react-native";
+
+import {
+  Header,
+  Left,
+  Right,
+  Icon,
+  Body,
+  Title,
+  CheckBox,
+  ListItem
+} from "native-base";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import { spielanlagen } from "../datenbank/spielanlagen";
+import BottomSheet from "reanimated-bottom-sheet";
+import SegmentedControlTab from "react-native-segmented-control-tab";
+import MarkerinformationScreen from "./Markerinformation";
+import { Switch, Button } from "react-native-paper";
+import styles from "../styles/Styles";
+const filterObjectArray = require('filter-object-array');
+const geolib = require("geolib");
+
+class SpielplatzScreen extends React.Component {
+  constructor() {
+    super();
+    this.bs = React.createRef();
+    this.state = {
+      region: {
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02
+      },
+      markers: [],
+      loaded: false,
+      radius: 400,
+      newRadius: 1000,
+      selectedMarker: null,
+      modalVisible: false,
+      selectedIndex: 0,
+      rutscheFilter: false,
+      schaukelFilter: false,
+      entfernung: null,
+    };
+  }
+
+  updateKM = () => {
+      if(this.state.selectedIndex==0){
+        this.setState({newRadius: 50})
+      }
+      else if(this.state.selectedIndex==1){
+        this.setState({newRadius: 3000})
+      }
+      else if(this.state.selectedIndex==2){
+        this.setState({newRadius: 5000})
+      }
+      else if(this.state.selectedIndex==3){
+        this.setState({newRadius: 10000})
+      }
+      Alert.alert('Filter','Änderungen gespeichert');
+  }
+
+  handleIndexChange = index => {
+    this.setState({
+      ...this.state,
+      selectedIndex: index
+    });
+  };
+
+
+  setModalVisible(visible) {
+    this.setState({ modalVisible: visible });
+  }
+  componentDidMount() {
+    this.getPosition();
+  }
+
+  getPosition() {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.setState(
+          {
+            region: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02
+            }
+          },
+          () => this.getLocation()
+        );
+      },
+      error => this.setState({ error: error.message }),
+      { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 }
+    );
+  }
+
+  static navigationOptions = {
+    drawerIcon: ({ tintColor }) => (
+      <Icon name="body" style={{ fontSize: 24, color: tintColor }} />
+    )
+  };
+
+  async getLocation() {
+    let { region } = this.state;
+    let { latitude, longitude } = region;
+    let markers = spielanlagen.map(marker => {
+      let name = marker.name;
+      let image = marker.image;
+      let street = marker.street;
+      let art = marker.art;
+      let coords = marker.coordinate;
+      let rutsche = marker.rutsche;
+      return {
+        coordinate: {
+          latitude: coords[0],
+          longitude: coords[1]
+        },
+        name: marker.name,
+        street: marker.street,
+        image: marker.image,
+        art: marker.art
+      };
+    }).filter(marker => {
+           let distance = this.calculateDistance(latitude, longitude, marker.coordinate.latitude, marker.coordinate.longitude);
+           return distance <= this.state.newRadius;
+         })
+    let filtersMatchType = {};
+    if (this.state.rutscheFilter) {
+        const filtersMatchType = {
+            rutsche: true,
+        };
+        console.log('filter' +this.state.rutscheFilter.toString())
+        console.log(await filterObjectArray({ array: spielanlagen, objFilter: filtersMatchType }));
+    }
+    const filteredMarker = await filterObjectArray({ array: marker, objFilter: filtersMatchType })
+    this.setState({
+      markers: filteredMarker,
+      loaded: true
+    });
+  }
+
+
+  calculateDistance(origLat, origLon, markerLat, markerLon) {
+      return geolib.getDistance(
+        {latitude: origLat, longitude: origLon},
+        {latitude: markerLat, longitude: markerLon}
+      );
+  }
+
+  renderInner = () => (
+    <View>
+      {this.state.selectedMarker && (
+        <MarkerinformationScreen
+          key={Math.random()}
+          name={this.state.selectedMarker.name}
+          street={this.state.selectedMarker.street}
+          image={this.state.selectedMarker.image}
+          lati={this.state.selectedMarker.coordinate.latitude}
+          longi={this.state.selectedMarker.coordinate.longitude}
+          art={this.state.selectedMarker.art}
+        />
+      )}
+    </View>
+  );
+
+  renderHeader = () => (
+    <View style={styles.reanimatedHeader}>
+      <View style={styles.bottomSheetHeader}>
+        <View />
+        <View style={styles.bottomSheetLinie} />
+        <TouchableOpacity>
+          <Icon
+            style={styles.closeX}
+            name="close"
+            onPress={() => this.bs.current.snapTo(1)}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  render() {
+    const { rutscheFilter, schaukelFilter } = this.state;
+    return (
+      <View style={styles.section}>
+        <Header>
+          <Left></Left>
+          <Body>
+            <Text>Spielanlagen</Text>
+          </Body>
+          <Right>
+            <Icon
+              name="options"
+              onPress={() => {
+                this.setModalVisible(!this.state.modalVisible);
+              }}
+            />
+          </Right>
+        </Header>
+
+        <Modal
+          animationType="fade"
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {
+            Alert.alert("Modal has been closed.");
+          }}
+        >
+          <View style={styles.modalDialog}>
+
+            <View style={styles.modalHeader}>
+              <View />
+              <View>
+                <Text style={styles.modalHeaderText}>Filter Einstellungen</Text>
+              </View>
+              <View style={{ bottom: -10 }}>
+                <Icon
+                  name="close"
+                  style={{ fontSize: 34 }}
+                  onPress={() => {
+                    this.setModalVisible(!this.state.modalVisible);
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalInner}>
+              <View style={styles.rows}>
+                <Text style={styles.optionstitle}>
+                  Wählen Sie die Entfernung (in KM):
+                </Text>
+                <View style={styles.segmentedControl}>
+                  <SegmentedControlTab
+                    values={["1", "3", "5", "10"]}
+                    selectedIndex={this.state.selectedIndex}
+                    onTabPress={this.handleIndexChange}
+                  />
+                </View>
+              </View>
+              <View style={styles.rows}>
+                <Text style={styles.optionstitle}>
+                  Filtermöglichkeiten für Spielplätze
+                </Text>
+                <ListItem>
+                  <Left>
+                    <Text>Rutsche:</Text>
+                  </Left>
+                  <Right>
+                    <Switch
+                      value={rutscheFilter}
+                      onValueChange={() => {
+                        this.setState({ rutscheFilter: !rutscheFilter });
+                      }}
+                    />
+                  </Right>
+                </ListItem>
+                <ListItem>
+                  <Left>
+                    <Text>Schaukel:</Text>
+                  </Left>
+                  <Right>
+                    <Switch
+                      value={schaukelFilter}
+                      onValueChange={() => {
+                        this.setState({ schaukelFilter: !schaukelFilter });
+                      }}
+                    />
+                  </Right>
+                </ListItem>
+              </View>
+            </View>
+          </View>
+          <View style={styles.modalFooter}>
+
+            <Button
+              style={styles.btnFilterUpdate}
+              mode="contained"
+              color="#65A800"
+              dark
+              onPress={() => {this.getLocation()}}
+            >
+              Änderungen Speichern
+            </Button>
+            <Button
+              style={styles.btnFilterClose}
+              mode="contained"
+              color="#65A800"
+              dark
+              onPress={ () => {this.getLocation();this.setModalVisible(!this.state.modalVisible)}}
+            >
+              Schließen
+            </Button>
+          </View>
+        </Modal>
+
+        <BottomSheet
+          style={styles.sheet}
+          ref={this.bs}
+          snapPoints={[450, 0, 0]}
+          renderContent={this.renderInner}
+          renderHeader={this.renderHeader}
+          initialSnap={1}
+        />
+
+        <MapView
+          style={styles.map}
+          region={this.state.region}
+          showsUserLocation={true}
+          provider={PROVIDER_GOOGLE}
+        >
+          {this.state.markers.map((marker, index) => (
+            <MapView.Marker
+              key={Math.random()}
+              coordinate={marker.coordinate}
+              onPress={() => {
+                this.bs.current.snapTo(0);
+                navigator.geolocation.getCurrentPosition(
+                  position => {
+                    this.setState(
+                      {
+                        selectedMarker: marker,
+                        region: {
+                          latitude: marker.coordinate.latitude,
+                          longitude: marker.coordinate.longitude,
+                          latitudeDelta: 0.02,
+                          longitudeDelta: 0.02
+                        }
+                      },
+                      () => this.getLocation()
+                    );
+                  },
+                  error => this.setState({ error: error.message }),
+                  {
+                    enableHighAccuracy: false,
+                    timeout: 200000,
+                    maximumAge: 1000
+                  }
+                );
+              }}
+            />
+          ))}
+        </MapView>
+      </View>
+    );
+  }
+}
+export default SpielplatzScreen;
